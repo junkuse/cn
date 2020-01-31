@@ -1,3 +1,25 @@
+a="t"
+b=[]
+b=''.join([format(ord(str(i)),'b') for i in a])
+c=[i for i in b]
+bits=c
+stuffed=[]
+count=0
+for i in range(len(bits)):
+    if bits[i]=='1':
+        count=count+1
+        stuffed.append(bits[i])
+    elif bits[i]!='1':
+        count=0
+        stuffed.append(bits[i])
+    if count==2:
+        stuffed.insert(i+1,str(0))
+print(stuffed)
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
 # Import socket module 
 import socket			 
 
