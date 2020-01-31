@@ -1,0 +1,123 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#server
+import socket
+serversocket=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+host=socket.gethostname()
+port=9994
+serversocket.bind((host,port))
+serversocket.listen(5)
+while(True):
+    clientsocket,addr=serversocket.accept()
+    print("connected %s" %str(addr))
+    message="this is ur mesage "
+    clientsocket.send(message.encode("ascii"))
+    clientsocket.close()
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#client
+
+import socket
+host=socket.gethostname()
+port=9994
+s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+s.connect((host,port))
+print("recieved")
+tm=s.recv(1024)
+print("message : %s" %tm.decode("ascii"))
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+#hamming
+
+
+def calcRedundantBits(m): 
+
+	for i in range(m): 
+		if(2**i >= m + i + 1): 
+			return i 
+
+
+def posRedundantBits(data, r): 
+
+	j = 0
+	k = 1
+	m = len(data) 
+	res = '' 
+
+	for i in range(1, m + r+1): 
+		if(i == 2**j): 
+			res = res + '0'
+			j += 1
+		else: 
+			res = res + data[-1 * k] 
+			k += 1
+
+	return res[::-1] 
+
+
+def calcParityBits(arr, r): 
+	n = len(arr) 
+
+	for i in range(r): 
+		val = 0
+		for j in range(1, n + 1): 
+
+			if(j & (2**i) == (2**i)): 
+				val = val ^ int(arr[-1 * j]) 
+
+		arr = arr[:n-(2**i)] + str(val) + arr[n-(2**i)+1:] 
+	return arr 
+
+
+def detectError(arr, nr): 
+	n = len(arr) 
+	res = 0
+
+	for i in range(nr): 
+		val = 0
+		for j in range(1, n + 1): 
+			if(j & (2**i) == (2**i)): 
+				val = val ^ int(arr[-1 * j]) 
+
+
+
+		res = res + val*(10**i) 
+
+	return int(str(res), 2) 
+data = '1011001'
+
+#======================
+test_str = "GeeksforGeeks"
+print("The original string is : " + str(test_str)) 
+res = ''.join(format(ord(i), 'b') for i in test_str) 
+print("The string after binary conversion : " + str(res))
+#======================
+
+m = len(data) 
+r = calcRedundantBits(m) 
+arr = posRedundantBits(data, r) 
+arr = calcParityBits(arr, r)  
+print("Data transferred is " + arr) 
+
+
+#======================
+def BinaryToDecimal(binary):  
+	string = int(binary, 2) 
+	return string 
+bin_data ='1000111110010111001011101011111001111001101101111111001010001111100101110010111010111110011'
+print("The binary value is:", bin_data) 
+str_data =' '
+for i in range(0, len(bin_data), 7): 
+	temp_data = bin_data[i:i + 7] 
+	decimal_data = BinaryToDecimal(temp_data) 
+	str_data = str_data + chr(decimal_data) 
+print("The Binary value after string conversion is:", 
+	str_data) 
+#======================
+
+arr = '11101001110'
+print("Error Data is " + arr) 
+correction = detectError(arr, r) 
+print("The position of error is " + str(correction)) 
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
