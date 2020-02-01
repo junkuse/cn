@@ -1,0 +1,30 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jan 31 21:27:17 2020
+
+@author: DELL
+"""
+
+divisor="10111"
+dataword="1010011110"
+
+for i in range(0,len(divisor)-1):
+    dataword=dataword+"0"
+    
+print(dataword)
+
+for i in range(0,len(dataword)):
+    #print("Outer :-",dataword)
+    if(len(dataword)-i<len(divisor)):
+        break
+    if(dataword[i]!='0'):
+        for j in range(0,len(divisor)):
+            if(divisor[j]==dataword[i+j]):
+                dataword=dataword[0:i+j]+"0"+dataword[i+j+1:]
+            else:
+                dataword=dataword[0:i+j]+"1"+dataword[i+j+1:]
+            #print("\tInner :-",dataword)
+        
+print("Final ",dataword)
+        
+print("Remainder will be ",dataword[len(dataword)-len(divisor)+1:len(dataword)])
