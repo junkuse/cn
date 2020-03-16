@@ -1,0 +1,163 @@
+def checkclass(ipaddress,mask,supermask):
+    ipaddress=list(map(int,ipaddress.split('.')))
+    ipstr=""
+    if(ipaddress[0]>=0 and ipaddress[0]<=127):
+        print("Class A")
+    if(ipaddress[0]>=128 and ipaddress[0]<=191):
+        print("Class B")
+    if(ipaddress[0]>=192 and ipaddress[0]<=223):
+        print("Class C")
+    if(ipaddress[0]>=224 and ipaddress[0]<=239):
+        print("Class D")
+    if(ipaddress[0]>=240 and ipaddress[0]<=255):
+        print("Class E")
+    for i in ipaddress:
+        ipstr=ipstr+"0"*(8-len(bin(i)[2:]))+bin(i)[2:]
+    netip=ipstr[:mask]+"0"*(32-mask)
+    firstip=ipstr[:mask]+"0"*(32-mask-1)+"1"
+    lastip=ipstr[:mask]+"1"*(32-mask-1)+"0"
+    bcastip=ipstr[:mask]+"1"*(32-mask)
+    #maskstr="1"*(mask)+"0"*(32-mask)
+    print("For mask ",mask)
+    print("Network      IP : ",int(netip[:8],2),int(netip[8:16],2),int(netip[16:24],2),int(netip[24:],2))
+    print("First        IP : ",int(firstip[:8],2),int(firstip[8:16],2),int(firstip[16:24],2),int(firstip[24:],2))
+    print("Last         IP : ",int(lastip[:8],2),int(lastip[8:16],2),int(lastip[16:24],2),int(lastip[24:],2))
+    print("Broadcast    IP : ",int(bcastip[:8],2),int(bcastip[8:16],2),int(bcastip[16:24],2),int(bcastip[24:],2))
+    netip=ipstr[:supermask]+"0"*(32-supermask)
+    """
+    FOR SUPERMASK=28 
+        NO OF SUBNET BITS=4
+        SO WE HAVE 16 SUBNETWORKS
+    """
+    print("\nFor mask ",supermask)
+    for netid in range(0,pow(2,supermask-mask)):
+        netip=ipstr[:mask]+"0"*(supermask-mask-1)+bin(netid)[2:]+"0"*(32-supermask)
+        firstip=ipstr[:mask]+"0"*(supermask-mask-len(bin(netid)[2:]))+bin(netid)[2:]+"0"*(32-supermask-1)+"1"
+        lastip=ipstr[:mask]+"0"*(supermask-mask-len(bin(netid)[2:]))+bin(netid)[2:]+"1"*(32-supermask-1)+"0"
+        bcastip=ipstr[:mask]+"0"*(supermask-mask-len(bin(netid)[2:]))+bin(netid)[2:]+"1"*(32-supermask)
+        print("\nNetwork      IP : ",int(netip[:8],2),int(netip[8:16],2),int(netip[16:24],2),int(netip[24:],2))
+        print("First        IP : ",int(firstip[:8],2),int(firstip[8:16],2),int(firstip[16:24],2),int(firstip[24:],2))
+        print("Last         IP : ",int(lastip[:8],2),int(lastip[8:16],2),int(lastip[16:24],2),int(lastip[24:],2))
+        print("Broadcast    IP : ",int(bcastip[:8],2),int(bcastip[8:16],2),int(bcastip[16:24],2),int(bcastip[24:],2))
+    
+
+===================================================================================
+
+import socket
+import addressing
+
+server=socket.socket()
+server.bind((socket.gethostname(),9994))
+server.listen(5)
+client,addr=server.accept()
+subnet=client.recv(1024)
+supernet=client.recv(1024)
+print("Got message ",subnet.decode('utf-8'),supernet.decode('utf-8')," from ",addr[0])
+try:
+    subnet=int(subnet)
+    supernet=int(supernet)
+except:
+    subnet=24
+addressing.checkclass('192.168.43.208',subnet,supernet)
+server.close()
+
+
+===================================================================================
+
+import socket
+
+server=socket.socket()
+server.connect((socket.gethostbyname(socket.gethostname()),9994))
+msg=str(input("Kindly enter your initial network mask:- "))
+server.send(msg.encode('utf-8'))
+msg=str(input("Kindly enter your final network mask:- "))
+server.send(msg.encode('utf-8'))
+server.close()
+
+
+===================================================================================
+
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 30 19:15:36 2020
+
+@author: 18pw08
+"""
+
+def get_mtu(p1,p2):
+    
+    mtu=[[('A','C'),1500],[('A','D'),3500],[('B','C'),1000],[('C','D'),2000],[('C','F'),1000],
+          [('D','E'),1500],[('F','E'),1400]]
+
+    for i in range(len(mtu)):
+        if mtu[i][0][0]==p1 and mtu[i][0][1]==p2:
+            return mtu[i][1]
+        elif  mtu[i][0][0]==p2 and mtu[i][0][1]==p1:
+            return mtu[i][1]
+    
+#routing
+client={'c1':'A','c2':'B','c3':'E','c4':'F'}
+A={'B':'C','C':'C','D':'D','E':'C','F':'C'}
+B={'A':'C','C':'C','D':'C','E':'C','F':'C'}
+C={'A':'A','B':'B','D':'D','E':'F','F':'F'}
+D={'A':'A','B':'C','C':'C','E':'E','F':'E'}
+E={'A':'D','B':'F','C':'F','D':'D','F':'F'}
+F={'A':'C','B':'C','C':'C','D':'E','E':'E'}
+
+point={'A':A,'B':B,'C':C,'D':D,'E':E,'F':F}
+
+src=input('Enter the Source Client:')
+dest=input('Enter the destination Client:')
+
+s_p=client[src]
+d_p=client[dest]
+
+temp=s_p
+
+rout=[]
+while temp!=d_p:
+    rout.append(temp)
+    r=point[temp]
+    temp=r[d_p]
+rout.append(d_p)
+
+print('The path is :',rout)
+
+packet_size=input('Enter the packet size:')
+packet_size=int(packet_size)
+header=input('Enter the header size:')
+header=int(header)
+
+flag=0
+prev_packet_size=packet_size
+current=rout[0]
+destination=rout[-1]
+
+while current != destination:
+    
+
+    prev=current
+    flag=flag+1
+    current=rout[flag]
+    print('\n')
+    print('From ',prev,'To ',current)
+    
+    m=get_mtu(prev,current)
+    data_size=m
+    data_size=data_size-header
+    data_size=(data_size)-(data_size % 8)
+
+    address=0
+    i=1
+    
+    while address<packet_size:
+        while address<prev_packet_size*i and address<packet_size:
+            print(address//8,end=' ')
+            address=address+data_size
+        i=i+1
+        addres=prev_packet_size*i
+    prev_packet_size=data_size
+
+===================================================================================
+
+===================================================================================
